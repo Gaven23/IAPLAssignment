@@ -1,0 +1,65 @@
+﻿@model IEnumerable<IAPL_Assignment.Data.Measurement>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Meter)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Kilometer)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Kelvin)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Fahrenherint)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Hectare)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Unit)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Meter)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Kilometer)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Kelvin)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Fahrenherint)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Hectare)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Unit.UnitName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Measurementid">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Measurementid">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Measurementid">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
