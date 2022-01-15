@@ -2,148 +2,112 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using IAPL_Assignment.Data;
 
 namespace IAPL_Assignment.Controllers
 {
-    public class MeasurementsController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class MeasurementsController : ControllerBase
     {
-        dbsIAPLAssignmentContext _context = new dbsIAPLAssignmentContext();
+         dbsIAPLAssignmentContext _context = new dbsIAPLAssignmentContext();
 
-        // GET: Measurements
-        public async Task<IActionResult> Index()
+       
+
+        // GET: api/Measurements
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Measurement>>> GetMeasurements()
         {
-            var dbsIAPLAssignmentContext = _context.Measurements.Include(m => m.Unit);
-            return View(await dbsIAPLAssignmentContext.ToListAsync());
+            return await _context.Measurements.ToListAsync();
         }
 
-        // GET: Measurements/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: api/Measurements/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Measurement>> GetMeasurement(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var measurement = await _context.Measurements
-                .Include(m => m.Unit)
-                .FirstOrDefaultAsync(m => m.Measurementid == id);
-            if (measurement == null)
-            {
-                return NotFound();
-            }
-
-            return View(measurement);
-        }
-
-        // GET: Measurements/Create
-        public IActionResult Create()
-        {
-            ViewData["Unitid"] = new SelectList(_context.Units, "Unitid", "UnitName");
-            return View();
-        }
-
-        // POST: Measurements/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Measurementid,Unitid,Meter,Kilometer,Kelvin,Fahrenherint,Hectare")] Measurement measurement)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(measurement);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["Unitid"] = new SelectList(_context.Units, "Unitid", "UnitName", measurement.Unitid);
-            return View(measurement);
-        }
-
-        // GET: Measurements/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var measurement = await _context.Measurements.FindAsync(id);
+
             if (measurement == null)
             {
                 return NotFound();
             }
-            ViewData["Unitid"] = new SelectList(_context.Units, "Unitid", "UnitName", measurement.Unitid);
-            return View(measurement);
+
+            return measurement;
         }
 
-        // POST: Measurements/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Measurementid,Unitid,Meter,Kilometer,Kelvin,Fahrenherint,Hectare")] Measurement measurement)
+        // PUT: api/Measurements/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutMeasurement(int id, Measurement measurement)
         {
             if (id != measurement.Measurementid)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            if (ModelState.IsValid)
+            _context.Entry(measurement).State = EntityState.Modified;
+
+            try
             {
-                try
-                {
-                    _context.Update(measurement);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!MeasurementExists(measurement.Measurementid))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
             }
-            ViewData["Unitid"] = new SelectList(_context.Units, "Unitid", "UnitName", measurement.Unitid);
-            return View(measurement);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!MeasurementExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        // GET: Measurements/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // POST: api/Measurements
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Measurement>> PostMeasurement(Measurement measurement)
         {
-            if (id == null)
+            _context.Measurements.Add(measurement);
+            try
             {
-                return NotFound();
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (MeasurementExists(measurement.Measurementid))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
-            var measurement = await _context.Measurements
-                .Include(m => m.Unit)
-                .FirstOrDefaultAsync(m => m.Measurementid == id);
+            return CreatedAtAction("GetMeasurement", new { id = measurement.Measurementid }, measurement);
+        }
+
+        // DELETE: api/Measurements/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMeasurement(int id)
+        {
+            var measurement = await _context.Measurements.FindAsync(id);
             if (measurement == null)
             {
                 return NotFound();
             }
 
-            return View(measurement);
-        }
-
-        // POST: Measurements/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var measurement = await _context.Measurements.FindAsync(id);
             _context.Measurements.Remove(measurement);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return NoContent();
         }
 
         private bool MeasurementExists(int id)
